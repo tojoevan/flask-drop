@@ -685,9 +685,9 @@ function buildPeerCard(peer) {
 
   setupPeerCardDrop(card, peer.id);
 
-  // Click card → scroll to transfer area
+  // Click card → scroll to transfer area (but not when clicking messages/input/bubble)
   card.addEventListener("click", (e) => {
-    if (e.target.closest(".peer-msg-input-row") || e.target.closest(".peer-transfer-area")) return;
+    if (e.target.closest(".peer-msg-input-row") || e.target.closest(".peer-transfer-area") || e.target.closest(".msg-bubble")) return;
     card.querySelector(".peer-transfer-area")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
 
@@ -705,9 +705,6 @@ function appendMessage(card, text, isOwn) {
     _doCopy(text);
     showToast($$t("msgCopied"), "success", 2000);
   });
-  bubble.addEventListener("touchstart", (e) => {
-    e.stopPropagation();
-  }, { passive: true });
   container.appendChild(bubble);
   container.scrollTop = container.scrollHeight;
 }
