@@ -24,9 +24,12 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 # ── helpers ────────────────────────────────────────────────────────────────────
 
-def gen_room_id(length: int = 8) -> str:
-    chars = string.ascii_lowercase + string.digits
-    return "".join(random.choices(chars, k=length))
+def gen_room_id() -> str:
+    letters = "".join(random.choices(string.ascii_uppercase, k=3))
+    digits  = "".join(random.choices(string.digits, k=3))
+    parts = list(letters + digits)
+    random.shuffle(parts)
+    return "".join(parts)
 
 def json_ok(data=None, status: int = 200):
     payload = {"ok": True}
