@@ -627,34 +627,38 @@ function buildPeerCard(peer) {
   const statusText = rtcConn && rtcConn.isConnected ? $$t("connectedTo") : $$t("connecting");
 
   card.innerHTML = `
-    <div class="peer-icon">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-        <line x1="8" y1="21" x2="16" y2="21"/>
-        <line x1="12" y1="17" x2="12" y2="21"/>
-      </svg>
-    </div>
-    <div class="peer-name">${escHtml(peer.display_name || "Anonymous")}</div>
-    <div class="peer-status">${statusText}</div>
-
-    <div class="peer-section">
-      <div class="peer-section-label">${$$t("sectionTransfer")}</div>
-      <div class="peer-transfer-area">
-        ${$$t("dropHintCard")}
+    <div class="card-info">
+      <div class="peer-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
       </div>
-      <input type="file" class="peer-file-input" multiple />
+      <div class="peer-name">${escHtml(peer.display_name || "Anonymous")}</div>
+      <div class="peer-status">${statusText}</div>
     </div>
 
-    <div class="peer-section">
-      <div class="peer-section-label">${$$t("sectionMessages")}</div>
-      <div class="peer-messages"></div>
-      <div class="peer-msg-input-row">
-        <textarea class="peer-msg-input" rows="1" placeholder="${$$t("msgPlaceholder")}" style="height:32px"></textarea>
-        <button class="peer-msg-send" title="${$$t("send")}">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-          </svg>
-        </button>
+    <div class="card-sections">
+      <div class="peer-section">
+        <div class="peer-section-label">${$$t("sectionTransfer")}</div>
+        <div class="peer-transfer-area">
+          ${$$t("dropHintCard")}
+        </div>
+        <input type="file" class="peer-file-input" multiple />
+      </div>
+
+      <div class="peer-section">
+        <div class="peer-section-label">${$$t("sectionMessages")}</div>
+        <div class="peer-messages"></div>
+        <div class="peer-msg-input-row">
+          <textarea class="peer-msg-input" rows="1" placeholder="${$$t("msgPlaceholder")}" style="height:32px"></textarea>
+          <button class="peer-msg-send" title="${$$t("send")}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   `;
