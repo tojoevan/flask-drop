@@ -32,10 +32,14 @@ def json_ok(data=None, status: int = 200):
     payload = {"ok": True}
     if data is not None:
         payload["data"] = data
-    return jsonify(payload), status
+    resp = jsonify(payload)
+    resp.status_code = status
+    return resp
 
 def json_err(msg: str, status: int = 400):
-    return jsonify({"ok": False, "error": msg}), status
+    resp = jsonify({"ok": False, "error": msg})
+    resp.status_code = status
+    return resp
 
 # ── static / SPA ───────────────────────────────────────────────────────────────
 
@@ -196,7 +200,9 @@ _thread.start()
 
 # ── entry point ───────────────────────────────────────────────────────────────
 
+PORT = int(__import__("os").getenv("PORT", 5001))
+
 if __name__ == "__main__":
     db.init_db()
-    print("Starting PairDrop Clone at http://localhost:5000")
-    app.run(host="0.0.0.0", port=5000, debug=True, threaded=True)
+    print(f"Starting PairDrop Clone at http://localhost:{PORT}")
+    app.run(host="0.0.0.0", port=PORT, debug=False, threaded=True, use_reloader=False)
