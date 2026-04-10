@@ -700,10 +700,14 @@ function appendMessage(card, text, isOwn) {
   bubble.className = `msg-bubble${isOwn ? " own" : ""}`;
   bubble.textContent = text;
   bubble.title      = $$t("msgCopied");
-  bubble.addEventListener("click", () => {
+  bubble.addEventListener("click", (e) => {
+    e.stopPropagation();
     _doCopy(text);
     showToast($$t("msgCopied"), "success", 2000);
   });
+  bubble.addEventListener("touchstart", (e) => {
+    e.stopPropagation();
+  }, { passive: true });
   container.appendChild(bubble);
   container.scrollTop = container.scrollHeight;
 }
