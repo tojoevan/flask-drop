@@ -29,6 +29,9 @@ function showToast(msg, type = "info", duration = 3000) {
 }
 
 // ── State ───────────────────────────────────────────────────────────────────
+let currentLang = localStorage.getItem("lang") ||
+  (navigator.language.startsWith("zh") ? "zh" : "en");
+
 
 const state = {
   roomId:      null,
@@ -41,24 +44,7 @@ const state = {
 };
 
 // Apply saved language on load
-setLang(currentLang);
 
-// ── DOM refs ────────────────────────────────────────────────────────────────
-
-const $joinScreen    = document.getElementById("joinScreen");
-const $roomScreen    = document.getElementById("roomScreen");
-const $joinError     = document.getElementById("joinError");
-const $createPanel   = document.getElementById("createPanel");
-const $joinPanel     = document.getElementById("joinPanel");
-const $joinCode      = document.getElementById("joinCode");
-const $emptyState    = document.getElementById("emptyState");
-const $peersGrid     = document.getElementById("peersGrid");
-const $transferQueue = document.getElementById("transferQueue");
-const $dropOverlay   = document.getElementById("dropOverlay");
-const $bigRoomCode   = document.getElementById("bigRoomCode");
-const $roomCodeLabel = document.getElementById("roomCodeLabel");
-
-// ── i18n ─────────────────────────────────────────────────────────────────────
 
 const translations = {
   en: {
@@ -161,8 +147,6 @@ const translations = {
   },
 };
 
-let currentLang = localStorage.getItem("lang") ||
-  (navigator.language.startsWith("zh") ? "zh" : "en");
 
 const $$t = (key) => translations[currentLang]?.[key] ?? translations.en[key] ?? key;
 
@@ -220,6 +204,25 @@ function randomName() {
   const num  = Math.floor(Math.random() * 90) + 10;
   return `${adj}${noun}${num}`;
 }
+
+
+setLang(currentLang);  // apply saved language on load
+
+
+const $joinScreen    = document.getElementById("joinScreen");
+const $roomScreen    = document.getElementById("roomScreen");
+const $joinError     = document.getElementById("joinError");
+const $createPanel   = document.getElementById("createPanel");
+const $joinPanel     = document.getElementById("joinPanel");
+const $joinCode      = document.getElementById("joinCode");
+const $emptyState    = document.getElementById("emptyState");
+const $peersGrid     = document.getElementById("peersGrid");
+const $transferQueue = document.getElementById("transferQueue");
+const $dropOverlay   = document.getElementById("dropOverlay");
+const $bigRoomCode   = document.getElementById("bigRoomCode");
+const $roomCodeLabel = document.getElementById("roomCodeLabel");
+
+// ── i18n ─────────────────────────────────────────────────────────────────────
 
 // ── Create / Join ──────────────────────────────────────────────────────────
 
