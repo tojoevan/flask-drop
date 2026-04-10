@@ -270,6 +270,9 @@ class PeerConnection {
         const blob = new Blob([merged], { type: buf.meta.mimeType });
         this._downloadBlob(blob, buf.meta.name);
         this._recvBuffers.delete(msg.id);
+
+      } else if (msg.type === "text") {
+        this.onMessage(msg.text);
       }
     }
   }
