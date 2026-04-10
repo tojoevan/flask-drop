@@ -86,6 +86,7 @@ const translations = {
     msgPlaceholder:"Send a message…",
     send:         "Send",
     errJoin:      "Failed to join room",
+    msgCopied:    "Message copied!",
     errRoomNotFound:"Room not found. Check the code and try again.",
     errNoPeers:  "No connected peers to send to",
     errNotConnected:"Not connected to that peer yet",
@@ -135,6 +136,7 @@ const translations = {
     msgPlaceholder:"发送消息…",
     send:         "发送",
     errJoin:     "加入房间失败",
+    msgCopied:   "消息已复制！",
     errRoomNotFound:"房间不存在，请检查房间码",
     errNoPeers:  "没有已连接的设备",
     errNotConnected:"未连接该设备",
@@ -697,6 +699,10 @@ function appendMessage(card, text, isOwn) {
   const bubble    = document.createElement("div");
   bubble.className = `msg-bubble${isOwn ? " own" : ""}`;
   bubble.textContent = text;
+  bubble.title      = $$t("msgCopied");
+  bubble.addEventListener("click", () => {
+    copyToClipboard(text);
+  });
   container.appendChild(bubble);
   container.scrollTop = container.scrollHeight;
 }

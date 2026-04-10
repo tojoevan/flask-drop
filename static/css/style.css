@@ -358,7 +358,11 @@ input[type="text"]::placeholder { color: var(--text-muted); }
   word-break: break-word;
   align-self: flex-start;
   max-width: 90%;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.15s;
 }
+.msg-bubble:hover { opacity: 0.75; }
 .msg-bubble.own {
   background: var(--accent);
   color: #fff;
