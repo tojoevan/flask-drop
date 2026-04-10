@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PairDrop Clone</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>" />
+</head>
+<body>
+
+  <!-- ── HEADER ─────────────────────────────────────────────────── -->
+  <header>
+    <div class="logo">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+        <line x1="12" y1="22.08" x2="12" y2="12"/>
+      </svg>
+      <span>PairDrop Clone</span>
+    </div>
+    <div class="header-right">
+      <button id="copyRoomBtn" class="btn-ghost hidden" title="Copy Room Code">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg>
+        <span id="roomCodeLabel"></span>
+      </button>
+      <button id="leaveRoomBtn" class="btn-ghost hidden" title="Leave Room">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Leave
+      </button>
+    </div>
+  </header>
+
+  <!-- ── JOIN SCREEN ─────────────────────────────────────────────── -->
+  <main id="joinScreen" class="screen active">
+    <div class="join-card">
+      <h1>Send files between devices</h1>
+      <p class="subtitle">Create or join a room to start sharing</p>
+
+      <!-- Mode tabs -->
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="create">Create Room</button>
+        <button class="mode-tab"        data-mode="join">Join Room</button>
+      </div>
+
+      <!-- Create -->
+      <div id="createPanel" class="panel active">
+        <label for="createName">Your Display Name</label>
+        <input type="text" id="createName" placeholder="e.g. John's Mac" maxlength="20" autocomplete="off" />
+        <button id="createRoomBtn" class="btn-primary full">Create Room</button>
+      </div>
+
+      <!-- Join -->
+      <div id="joinPanel" class="panel">
+        <label for="joinCode">Room Code</label>
+        <input type="text" id="joinCode" placeholder="e.g. ab12cd34" maxlength="8" autocomplete="off" spellcheck="false" />
+        <label for="joinName">Your Display Name</label>
+        <input type="text" id="joinName" placeholder="e.g. iPhone" maxlength="20" autocomplete="off" />
+        <button id="joinRoomBtn" class="btn-primary full">Join Room</button>
+      </div>
+
+      <p id="joinError" class="error hidden"></p>
+    </div>
+  </main>
+
+  <!-- ── ROOM SCREEN ─────────────────────────────────────────────── -->
+  <main id="roomScreen" class="screen">
+    <!-- Drop zone overlay -->
+    <div id="dropOverlay" class="drop-overlay hidden">
+      <div class="drop-inner">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <p>Drop files to send to all peers</p>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="emptyState" class="empty-state">
+      <div class="empty-icon">
+        <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+          <line x1="8" y1="21" x2="16" y2="21"/>
+          <line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+      </div>
+      <h2>Waiting for peers</h2>
+      <p>Share the room code with another device to connect.<br/>Files can also be dropped anywhere on this page.</p>
+      <div class="room-code-display">
+        <span id="bigRoomCode"></span>
+        <button id="copyCodeBtn" class="btn-ghost">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Copy
+        </button>
+      </div>
+    </div>
+
+    <!-- Peers grid -->
+    <div id="peersGrid" class="peers-grid hidden"></div>
+
+    <!-- Transfer queue -->
+    <div id="transferQueue" class="transfer-queue"></div>
+  </main>
+
+  <!-- ── TOAST ───────────────────────────────────────────────────── -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- ── SCRIPTS ────────────────────────────────────────────────── -->
+  <script src="/static/js/signaling.js"></script>
+  <script src="/static/js/webrtc.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
