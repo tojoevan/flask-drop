@@ -255,7 +255,7 @@ document.getElementById("joinRoomBtn").addEventListener("click", async () => {
   const code = ($joinCode.value || "").trim().toLowerCase();
   const name = randomName();
   if (!code)    { showErr($$t("hintRoomCode")); return; }
-  if (code.length !== 8) { showErr($$t("hintRoomLen")); return; }
+  if (code.length !== 6) { showErr($$t("hintRoomLen")); return; }
 
   state.displayName = name;
   state.roomId      = code;
