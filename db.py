@@ -63,7 +63,8 @@ def get_room(room_id: str) -> dict | None:
     conn = _conn()
     c = conn.cursor()
     c.execute("SELECT * FROM rooms WHERE room_id = ?", (room_id,))
-    return _row(c)
+    row = c.fetchone()
+    return dict(row) if row else None
 
 def touch_room(room_id: str):
     conn = _conn()
