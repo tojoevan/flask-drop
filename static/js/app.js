@@ -96,7 +96,7 @@ const translations = {
     errCreate:    "Failed to create room",
     sectionTransfer: "Transfer",
     sectionMessages:"Messages",
-    dropHintCard:     "Drop files here\nor click to pick",
+    dropHintCard:    "Drop files here\nor click to pick",
     msgPlaceholder:"Send a message…",
     send:         "Send",
     errJoin:      "Failed to join room",
@@ -241,7 +241,7 @@ document.getElementById("createRoomBtn").addEventListener("click", async () => {
 document.getElementById("joinRoomBtn").addEventListener("click", async () => {
   const code = ($joinCode.value || "").trim().toLowerCase();
   const name = randomName();
-  if (!code)    { showErr($$t("hintRoomLen")); return; }
+  if (!code)    { showErr($$t("hintRoomCode")); return; }
   if (code.length !== 8) { showErr($$t("hintRoomLen")); return; }
 
   state.displayName = name;
