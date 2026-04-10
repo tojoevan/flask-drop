@@ -701,7 +701,8 @@ function appendMessage(card, text, isOwn) {
   bubble.textContent = text;
   bubble.title      = $$t("msgCopied");
   bubble.addEventListener("click", () => {
-    copyToClipboard(text);
+    _doCopy(text);
+    showToast($$t("msgCopied"), "success", 2000);
   });
   container.appendChild(bubble);
   container.scrollTop = container.scrollHeight;
