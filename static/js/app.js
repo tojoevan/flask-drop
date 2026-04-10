@@ -170,8 +170,16 @@ function setLang(lang) {
   const btn = document.getElementById("langBtn");
   if (btn) btn.textContent = lang === "en" ? "中文" : "EN";
 
-  // Re-render dynamic UI
-  renderPeers();
+  // Re-render dynamic UI (peer cards have $$t-computed text)
+  for (const [pid, entry] of state.peers) {
+    const card = entry.card;
+    const rtcConn = state.rtc.get(pid);
+    const statusEl = card.querySelector(".peer-status");
+    if (statusEl) {
+      statusEl.textContent = rtcConn && rtcConn.isConnected
+        ? $$t("connectedTo") : $$t("disconnected");
+    }
+  }
 }
 
 // ── Language toggle ─────────────────────────────────────────────────────────
@@ -180,18 +188,6 @@ document.getElementById("langBtn").addEventListener("click", () => {
   setLang(currentLang === "en" ? "zh" : "en");
 });
 
-// ── Mode tabs ───────────────────────────────────────────────────────────────
-
-document.querySelectorAll(".mode-tab").forEach((tab) => {
-  tab.addEventListener("click", () => {
-    document.querySelectorAll(".mode-tab").forEach((t) => t.classList.remove("active"));
-    tab.classList.add("active");
-    const mode = tab.dataset.mode;
-    $createPanel.classList.toggle("active", mode === "create");
-    $joinPanel.classList.toggle("active",   mode === "join");
-    $joinError.classList.add("hidden");
-  });
-});
 
 // ── Random device name ──────────────────────────────────────────────────────
 
@@ -209,6 +205,8 @@ function randomName() {
 setLang(currentLang);  // apply saved language on load
 
 
+
+
 const $joinScreen    = document.getElementById("joinScreen");
 const $roomScreen    = document.getElementById("roomScreen");
 const $joinError     = document.getElementById("joinError");
@@ -222,7 +220,18 @@ const $dropOverlay   = document.getElementById("dropOverlay");
 const $bigRoomCode   = document.getElementById("bigRoomCode");
 const $roomCodeLabel = document.getElementById("roomCodeLabel");
 
-// ── i18n ─────────────────────────────────────────────────────────────────────
+// ── Mode tabs ───────────────────────────────────────────────────────────────
+
+document.querySelectorAll(".mode-tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".mode-tab").forEach((t) => t.classList.remove("active"));
+    tab.classList.add("active");
+    const mode = tab.dataset.mode;
+    $createPanel.classList.toggle("active", mode === "create");
+    $joinPanel.classList.toggle("active",   mode === "join");
+    $joinError.classList.add("hidden");
+  });
+});
 
 // ── Create / Join ──────────────────────────────────────────────────────────
 
