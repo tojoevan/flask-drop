@@ -325,20 +325,25 @@ document.getElementById("leaveRoomBtn").addEventListener("click", leaveRoom);
 // ── Copy room code ────────────────────────────────────────────────────────
 
 function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    showToast($$t("copied"), "success", 2000);
-  }).catch(() => {
-    // Fallback
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity  = "0";
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    document.body.removeChild(ta);
-    showToast($$t("copied"), "success", 2000);
-  });
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast($$t("copied"), "success", 2000);
+    }).catch(() => _doCopy(text));
+  } else {
+    _doCopy(text);
+  }
+}
+
+function _doCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity  = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand("copy");
+  document.body.removeChild(ta);
+  showToast($$t("copied"), "success", 2000);
 }
 
 document.getElementById("copyRoomBtn").addEventListener("click", () => {
