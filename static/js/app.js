@@ -40,6 +40,9 @@ const state = {
   signaling:   null,
 };
 
+// Apply saved language on load
+setLang(currentLang);
+
 // ── DOM refs ────────────────────────────────────────────────────────────────
 
 const $joinScreen    = document.getElementById("joinScreen");
@@ -47,15 +50,151 @@ const $roomScreen    = document.getElementById("roomScreen");
 const $joinError     = document.getElementById("joinError");
 const $createPanel   = document.getElementById("createPanel");
 const $joinPanel     = document.getElementById("joinPanel");
-const $createName    = document.getElementById("createName");
 const $joinCode      = document.getElementById("joinCode");
-const $joinName      = document.getElementById("joinName");
 const $emptyState    = document.getElementById("emptyState");
 const $peersGrid     = document.getElementById("peersGrid");
 const $transferQueue = document.getElementById("transferQueue");
 const $dropOverlay   = document.getElementById("dropOverlay");
 const $bigRoomCode   = document.getElementById("bigRoomCode");
 const $roomCodeLabel = document.getElementById("roomCodeLabel");
+
+// ── i18n ─────────────────────────────────────────────────────────────────────
+
+const translations = {
+  en: {
+    pageTitle:    "PairDrop Clone",
+    appName:       "PairDrop Clone",
+    leave:        "Leave",
+    heroTitle:    "Send files between devices",
+    heroSubtitle: "Create or join a room to start sharing",
+    tabCreate:    "Create Room",
+    tabJoin:      "Join Room",
+    labelRoomCode:"Room Code",
+    btnCreate:    "Create Room",
+    btnJoin:      "Join Room",
+    dropHint:     "Drop files to send to all peers",
+    emptyTitle:   "Waiting for peers",
+    emptyHint:    "Share the room code with another device to connect.\nFiles can also be dropped anywhere on this page.",
+    copy:         "Copy",
+    connectedTo:  "Connected",
+    connecting:   "Connecting…",
+    disconnected: "Disconnected",
+    sendFile:     "Send File",
+    cancel:       "Cancel",
+    sending:      "Sending",
+    receiving:    "Receiving",
+    complete:     "Complete",
+    failed:       "Failed",
+    you:          "(You)",
+    copied:       "Room code copied!",
+    shareLink:    "Share Link",
+    copyLink:     "Copy Link",
+    linkCopied:   "Link copied!",
+    linkLabel:    "Link",
+    sendUrl:      "Send URL",
+    urlSent:      "URL sent",
+    errCreate:    "Failed to create room",
+    sectionTransfer: "Transfer",
+    sectionMessages:"Messages",
+    dropHintCard:     "Drop files here\nor click to pick",
+    msgPlaceholder:"Send a message…",
+    send:         "Send",
+    errJoin:      "Failed to join room",
+    errRoomNotFound:"Room not found. Check the code and try again.",
+    errNoPeers:  "No connected peers to send to",
+    errNotConnected:"Not connected to that peer yet",
+    hintRoomCode:"Please enter a room code",
+    hintRoomLen: "Room code must be 8 characters",
+    joinedRoom:  "Joined room",
+    sendingFiles:"Sending file(s) to",
+    received:    "Received:",
+    urlSendOk:   "URL sent",
+  },
+  zh: {
+    pageTitle:    "PairDrop Clone",
+    appName:      "PairDrop",
+    leave:        "离开",
+    heroTitle:    "在设备之间发送文件",
+    heroSubtitle: "创建或加入房间，开始共享",
+    tabCreate:    "创建房间",
+    tabJoin:      "加入房间",
+    labelRoomCode:"房间码",
+    btnCreate:    "创建房间",
+    btnJoin:      "加入房间",
+    dropHint:     "拖放文件发送给所有设备",
+    emptyTitle:   "等待设备连接",
+    emptyHint:    "分享房间码给其他设备进行连接。\n也可以直接在页面任意位置拖放文件。",
+    copy:         "复制",
+    connectedTo:  "已连接",
+    connecting:   "连接中…",
+    disconnected: "未连接",
+    sendFile:     "发送文件",
+    cancel:       "取消",
+    sending:      "发送中",
+    receiving:    "接收中",
+    complete:     "完成",
+    failed:       "失败",
+    you:          "（我）",
+    copied:       "房间码已复制！",
+    shareLink:    "分享链接",
+    copyLink:     "复制链接",
+    linkCopied:   "链接已复制！",
+    linkLabel:    "链接",
+    sendUrl:      "发送链接",
+    urlSent:      "链接已发送",
+    errCreate:   "创建房间失败",
+    sectionTransfer: "传输",
+    sectionMessages:"消息",
+    dropHintCard:     "拖放文件到这里\n或点击选择",
+    msgPlaceholder:"发送消息…",
+    send:         "发送",
+    errJoin:     "加入房间失败",
+    errRoomNotFound:"房间不存在，请检查房间码",
+    errNoPeers:  "没有已连接的设备",
+    errNotConnected:"未连接该设备",
+    hintRoomCode:"请输入房间码",
+    hintRoomLen: "房间码必须为8位",
+    joinedRoom:  "已加入房间",
+    sendingFiles:"正在发送给",
+    received:    "已接收：",
+    urlSendOk:   "链接已发送",
+  },
+};
+
+let currentLang = localStorage.getItem("lang") ||
+  (navigator.language.startsWith("zh") ? "zh" : "en");
+
+const $$t = (key) => translations[currentLang]?.[key] ?? translations.en[key] ?? key;
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem("lang", lang);
+  document.documentElement.lang = lang;
+
+  // Update all static text
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.dataset.i18n;
+    const val = $$t(key);
+    if (val.includes("\n")) {
+      el.innerHTML = val.replace(/\n/g, "<br/>");
+    } else {
+      el.textContent = val;
+    }
+  });
+
+  // Toggle language button label
+  const btn = document.getElementById("langBtn");
+  if (btn) btn.textContent = lang === "en" ? "中文" : "EN";
+
+  // Re-render dynamic UI
+  renderPeers();
+}
+
+// ── Language toggle ─────────────────────────────────────────────────────────
+
+document.getElementById("langBtn").addEventListener("click", () => {
+  setLang(currentLang === "en" ? "zh" : "en");
+});
 
 // ── Mode tabs ───────────────────────────────────────────────────────────────
 
@@ -70,11 +209,22 @@ document.querySelectorAll(".mode-tab").forEach((tab) => {
   });
 });
 
+// ── Random device name ──────────────────────────────────────────────────────
+
+const ADJECTIVES = ["Swift","Cosmic","Electric","Neon","Crystal","Silver","Golden","Velvet","Thunder","Frost"];
+const NOUNS      = ["Falcon","Phoenix","Dragon","Tiger","Eagle","Panther","Comet","Rocket","Spectre","Viper"];
+
+function randomName() {
+  const adj  = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+  const num  = Math.floor(Math.random() * 90) + 10;
+  return `${adj}${noun}${num}`;
+}
+
 // ── Create / Join ──────────────────────────────────────────────────────────
 
 document.getElementById("createRoomBtn").addEventListener("click", async () => {
-  const name = ($createName.value || "Guest").trim().slice(0, 20);
-  if (!name) { showToast("Please enter your name", "error"); return; }
+  const name = randomName();
   state.displayName = name;
   state.signaling = new SignalingClient("", null, state.peerId, name);
 
@@ -84,16 +234,15 @@ document.getElementById("createRoomBtn").addEventListener("click", async () => {
     await state.signaling.register();
     enterRoom();
   } catch (e) {
-    showToast("Failed to create room: " + e.message, "error");
+    showToast($$t("errCreate") + ": " + e.message, "error");
   }
 });
 
 document.getElementById("joinRoomBtn").addEventListener("click", async () => {
   const code = ($joinCode.value || "").trim().toLowerCase();
-  const name = ($joinName.value || "Guest").trim().slice(0, 20);
-  if (!code)    { showErr("Please enter a room code"); return; }
-  if (code.length !== 8) { showErr("Room code must be 8 characters"); return; }
-  if (!name)    { showErr("Please enter your name"); return; }
+  const name = randomName();
+  if (!code)    { showErr($$t("hintRoomLen")); return; }
+  if (code.length !== 8) { showErr($$t("hintRoomLen")); return; }
 
   state.displayName = name;
   state.roomId      = code;
@@ -106,9 +255,9 @@ document.getElementById("joinRoomBtn").addEventListener("click", async () => {
     enterRoom();
   } catch (e) {
     if (e.message && e.message.includes("404")) {
-      showErr("Room not found. Check the code and try again.");
+      showErr($$t("errRoomNotFound"));
     } else {
-      showErr("Failed to join room: " + e.message);
+      showErr($$t("errJoin") + ": " + e.message);
     }
   }
 });
@@ -136,7 +285,7 @@ function enterRoom() {
   document.getElementById("copyRoomBtn").classList.remove("hidden");
   document.getElementById("leaveRoomBtn").classList.remove("hidden");
 
-  showToast(`Joined room ${state.roomId}`, "success");
+  showToast(`${$$t("joinedRoom")} ${state.roomId}`, "success");
 }
 
 async function leaveRoom() {
@@ -156,9 +305,7 @@ async function leaveRoom() {
   $peersGrid.classList.add("hidden");
   $emptyState.classList.remove("hidden");
   $transferQueue.innerHTML = "";
-  $createName.value = "";
   $joinCode.value   = "";
-  $joinName.value   = "";
 }
 
 document.getElementById("leaveRoomBtn").addEventListener("click", leaveRoom);
@@ -167,7 +314,7 @@ document.getElementById("leaveRoomBtn").addEventListener("click", leaveRoom);
 
 function copyToClipboard(text) {
   navigator.clipboard.writeText(text).then(() => {
-    showToast("Copied to clipboard!", "success", 2000);
+    showToast($$t("copied"), "success", 2000);
   }).catch(() => {
     // Fallback
     const ta = document.createElement("textarea");
@@ -178,7 +325,7 @@ function copyToClipboard(text) {
     ta.select();
     document.execCommand("copy");
     document.body.removeChild(ta);
-    showToast("Copied to clipboard!", "success", 2000);
+    showToast($$t("copied"), "success", 2000);
   });
 }
 
@@ -297,7 +444,7 @@ function handleIncomingCandidates(candidates) {
 
 function onFileComplete(fromPeerId, meta) {
   const entry = state.peers.get(fromPeerId);
-  showToast(`Receiving: ${meta.name}`, "info");
+  showToast(`${$$t("receiving")} ${meta.name}`, "info");
 }
 
 function onFileChunk(fromPeerId, chunk) {
@@ -323,7 +470,7 @@ function updateTransferProgress(id, progress) {
     if (progress >= 100) {
       fill?.classList.add("done");
       meta.textContent = "Complete";
-      showToast(`Received: ${t.name}`, "success");
+      showToast(`${$$t("received")} ${t.name}`, "success");
       setTimeout(() => removeTransfer(id), 5000);
     }
   }
@@ -338,7 +485,7 @@ function removeTransfer(id) {
 function sendFileToPeer(peerId, file) {
   const rtc = state.rtc.get(peerId);
   if (!rtc || !rtc.isConnected) {
-    showToast("Not connected to that peer yet", "error");
+    showToast($$t("errNotConnected"), "error");
     return;
   }
 
@@ -410,11 +557,11 @@ document.addEventListener("drop", (e) => {
   const files = [...e.dataTransfer.files];
   if (!files.length) return;
   const connected = [...state.rtc.entries()].filter(([, r]) => r.isConnected);
-  if (!connected.length) { showToast("No connected peers to send to", "error"); return; }
+  if (!connected.length) { showToast($$t("errNoPeers"), "error"); return; }
   for (const [pid, rtc] of connected) {
     for (const f of files) sendFileToPeer(pid, f);
   }
-  if (connected.length) showToast(`Sending ${files.length} file(s) to ${connected.length} peer(s)`, "info");
+  if (connected.length) showToast(`${files.length} ${$$t("sendingFiles")} ${connected.length}`, "info");
 });
 
 // ── Peer card drag & drop ───────────────────────────────────────────────────
@@ -458,7 +605,8 @@ function buildPeerCard(peer) {
   card.className = "peer-card";
   card.dataset.peerId = peer.id;
 
-  const statusText = peer.display_name ? "disconnected" : "connecting";
+  const rtcConn = state.rtc.get(peer.id);
+  const statusText = rtcConn && rtcConn.isConnected ? $$t("connectedTo") : $$t("connecting");
 
   card.innerHTML = `
     <div class="peer-icon">
@@ -472,19 +620,19 @@ function buildPeerCard(peer) {
     <div class="peer-status">${statusText}</div>
 
     <div class="peer-section">
-      <div class="peer-section-label">Transfer</div>
+      <div class="peer-section-label">${$$t("sectionTransfer")}</div>
       <div class="peer-transfer-area">
-        Drop files here<br/>or click to pick
+        ${$$t("dropHintCard")}
       </div>
       <input type="file" class="peer-file-input" multiple />
     </div>
 
     <div class="peer-section">
-      <div class="peer-section-label">Messages</div>
+      <div class="peer-section-label">${$$t("sectionMessages")}</div>
       <div class="peer-messages"></div>
       <div class="peer-msg-input-row">
-        <textarea class="peer-msg-input" rows="1" placeholder="Send a message…" style="height:32px"></textarea>
-        <button class="peer-msg-send" title="Send">
+        <textarea class="peer-msg-input" rows="1" placeholder="${$$t("msgPlaceholder")}" style="height:32px"></textarea>
+        <button class="peer-msg-send" title="${$$t("send")}">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
           </svg>
@@ -501,7 +649,7 @@ function buildPeerCard(peer) {
     const text = textarea.value.trim();
     if (!text) return;
     const rtc = state.rtc.get(peer.id);
-    if (!rtc?.isConnected) { showToast("Peer not connected yet", "error"); return; }
+    if (!rtc?.isConnected) { showToast($$t("errPeerOffline"), "error"); return; }
     rtc.sendText(text);
     appendMessage(card, text, true);
     textarea.value = "";

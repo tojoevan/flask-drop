@@ -200,7 +200,7 @@ _thread.start()
 
 # ── entry point ───────────────────────────────────────────────────────────────
 
-PORT = int(__import__("os").getenv("PORT", 5001))
+PORT = int(__import__("os").getenv("PORT", 8082))
 
 if __name__ == "__main__":
     db.init_db()

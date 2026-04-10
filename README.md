@@ -20,7 +20,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Then open **http://localhost:5000** in two browser windows (or on two different devices on the same network).
+Then open **http://localhost:8082** in two browser windows (or on two different devices on the same network).
 
 ### Connecting Across Networks
 

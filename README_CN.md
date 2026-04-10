@@ -24,7 +24,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-然后在**两个浏览器窗口**（或同一局域网内的两台设备）打开 **http://localhost:5000**。
+然后在**两个浏览器窗口**（或同一局域网内的两台设备）打开 **http://localhost:8082**。
 
 ---
 

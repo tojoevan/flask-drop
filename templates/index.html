@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PairDrop Clone</title>
+  <title data-i18n="pageTitle">PairDrop Clone</title>
   <link rel="stylesheet" href="/static/css/style.css" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>" />
 </head>
@@ -17,9 +17,10 @@
         <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
         <line x1="12" y1="22.08" x2="12" y2="12"/>
       </svg>
-      <span>PairDrop Clone</span>
+      <span data-i18n="appName">PairDrop Clone</span>
     </div>
     <div class="header-right">
+      <button id="langBtn" class="btn-ghost lang-btn" title="Switch Language">EN</button>
       <button id="copyRoomBtn" class="btn-ghost hidden" title="Copy Room Code">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
@@ -33,7 +34,7 @@
           <polyline points="16 17 21 12 16 7"/>
           <line x1="21" y1="12" x2="9" y2="12"/>
         </svg>
-        Leave
+        <span data-i18n="leave">Leave</span>
       </button>
     </div>
   </header>
@@ -41,29 +42,25 @@
   <!-- ── JOIN SCREEN ─────────────────────────────────────────────── -->
   <main id="joinScreen" class="screen active">
     <div class="join-card">
-      <h1>Send files between devices</h1>
-      <p class="subtitle">Create or join a room to start sharing</p>
+      <h1 data-i18n="heroTitle">Send files between devices</h1>
+      <p class="subtitle" data-i18n="heroSubtitle">Create or join a room to start sharing</p>
 
       <!-- Mode tabs -->
       <div class="mode-tabs">
-        <button class="mode-tab active" data-mode="create">Create Room</button>
-        <button class="mode-tab"        data-mode="join">Join Room</button>
+        <button class="mode-tab active" data-mode="create" data-i18n="tabCreate">Create Room</button>
+        <button class="mode-tab"        data-mode="join"   data-i18n="tabJoin">Join Room</button>
       </div>
 
       <!-- Create -->
       <div id="createPanel" class="panel active">
-        <label for="createName">Your Display Name</label>
-        <input type="text" id="createName" placeholder="e.g. John's Mac" maxlength="20" autocomplete="off" />
-        <button id="createRoomBtn" class="btn-primary full">Create Room</button>
+        <button id="createRoomBtn" class="btn-primary full" data-i18n="btnCreate">Create Room</button>
       </div>
 
       <!-- Join -->
       <div id="joinPanel" class="panel">
-        <label for="joinCode">Room Code</label>
+        <label for="joinCode" data-i18n="labelRoomCode">Room Code</label>
         <input type="text" id="joinCode" placeholder="e.g. ab12cd34" maxlength="8" autocomplete="off" spellcheck="false" />
-        <label for="joinName">Your Display Name</label>
-        <input type="text" id="joinName" placeholder="e.g. iPhone" maxlength="20" autocomplete="off" />
-        <button id="joinRoomBtn" class="btn-primary full">Join Room</button>
+        <button id="joinRoomBtn" class="btn-primary full" data-i18n="btnJoin">Join Room</button>
       </div>
 
       <p id="joinError" class="error hidden"></p>
@@ -80,7 +77,7 @@
           <polyline points="17 8 12 3 7 8"/>
           <line x1="12" y1="3" x2="12" y2="15"/>
         </svg>
-        <p>Drop files to send to all peers</p>
+        <p data-i18n="dropHint">Drop files to send to all peers</p>
       </div>
     </div>
 
@@ -93,8 +90,8 @@
           <line x1="12" y1="17" x2="12" y2="21"/>
         </svg>
       </div>
-      <h2>Waiting for peers</h2>
-      <p>Share the room code with another device to connect.<br/>Files can also be dropped anywhere on this page.</p>
+      <h2 data-i18n="emptyTitle">Waiting for peers</h2>
+      <p data-i18n="emptyHint">Share the room code with another device to connect.<br/>Files can also be dropped anywhere on this page.</p>
       <div class="room-code-display">
         <span id="bigRoomCode"></span>
         <button id="copyCodeBtn" class="btn-ghost">
@@ -102,7 +99,7 @@
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
           </svg>
-          Copy
+          <span data-i18n="copy">Copy</span>
         </button>
       </div>
     </div>
