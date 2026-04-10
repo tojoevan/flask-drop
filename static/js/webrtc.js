@@ -26,6 +26,7 @@ class PeerConnection {
     this._pendingCands = [];    // ICE candidates buffered before remote desc is set
     this._initiator   = false;
     this._localDescSet = false;
+    this._role        = null;   // "initiator" | "answerer" | null
 
     // File transfer state
     this._sendQueue   = [];     // files waiting to be sent
@@ -37,17 +38,25 @@ class PeerConnection {
   /** Begin a connection where we are the initiator (create offer). */
   async connectAsInitiator() {
     this._initiator = true;
+    this._role      = "initiator";
     this._createPeerConnection();
-    // Create data channel with a reliable label
     this._dc = this._pc.createDataChannel("file-transfer", { ordered: true });
     this._setupDataChannel();
     await this._createOffer();
+    // Wait for ICE gathering to complete so candidates are sent promptly
+    await new Promise((res) => {
+      if (this._pc.iceGatheringState === "complete") { res(); return; }
+      this._pc.onicegatheringstatechange = () => {
+        if (this._pc.iceGatheringState === "complete") res();
+      };
+    });
     this.onStatusChange("connecting");
   }
 
   /** Accept an incoming connection (we are the answerer). */
   async acceptConnection() {
     this._initiator = false;
+    this._role      = "answerer";
     this._createPeerConnection();
     this.onStatusChange("connecting");
   }
@@ -115,19 +124,25 @@ class PeerConnection {
   /** Called by app.js when we receive an offer meant for us. */
   async handleOffer(sdp, type, fromPeerId) {
     if (!this._pc) await this.acceptConnection();
-    await this._pc.setRemoteDescription(new RTCSessionDescription({ type, sdp }));
-    this._applyBufferedCandidates();
 
-    const answer = await this._pc.createAnswer();
-    await this._pc.setLocalDescription(answer);
-    this._localDescSet = true;
-    this._applyBufferedCandidates();
-    await this.signaling.sendAnswer(this.peerId, answer.sdp, answer.type);
+    // Guard against race: if we're already stable, the handshake is done — ignore stale offer.
+    if (this._pc.signalingState !== "have-local-offer") {
+      await this._pc.setRemoteDescription(new RTCSessionDescription({ type, sdp }));
+      this._applyBufferedCandidates();
+
+      const answer = await this._pc.createAnswer();
+      await this._pc.setLocalDescription(answer);
+      this._localDescSet = true;
+      this._applyBufferedCandidates();
+      await this.signaling.sendAnswer(this.peerId, answer.sdp, answer.type);
+    }
   }
 
   /** Called by app.js when we receive an answer. */
   async handleAnswer(sdp, type) {
     if (!this._pc) return;
+    // Guard against race: ignore if we're already stable (answer arrived after handshake completed).
+    if (this._pc.signalingState === "stable") return;
     await this._pc.setRemoteDescription(new RTCSessionDescription({ type, sdp }));
     this._applyBufferedCandidates();
   }
@@ -273,7 +288,10 @@ class PeerConnection {
   // ── Text message ─────────────────────────────────────────────────────────
 
   sendText(text) {
-    if (!this._dcReady || !this._dc) return false;
+    if (!this._dcReady || !this._dc) {
+      console.warn("[PeerConnection] sendText: DataChannel not ready", this._dc?.readyState);
+      return false;
+    }
     this._dc.send(JSON.stringify({ type: "text", text, ts: Date.now() }));
     return true;
   }
@@ -283,8 +301,9 @@ class PeerConnection {
   close() {
     if (this._dc)  { this._dc.close();  this._dc  = null; }
     if (this._pc)  { this._pc.close();  this._pc  = null; }
-    this._dcReady     = false;
+    this._dcReady      = false;
     this._localDescSet = false;
+    this._role         = null;
     this._pendingCands = [];
     this._recvBuffers  = new Map();
     this._sendQueue    = [];

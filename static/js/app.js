@@ -661,8 +661,10 @@ function buildPeerCard(peer) {
     const text = textarea.value.trim();
     if (!text) return;
     const rtc = state.rtc.get(peer.id);
-    if (!rtc?.isConnected) { showToast($$t("errPeerOffline"), "error"); return; }
-    rtc.sendText(text);
+    if (!rtc || !rtc.sendText(text)) {
+      showToast($$t("errPeerOffline"), "error");
+      return;
+    }
     appendMessage(card, text, true);
     textarea.value = "";
     textarea.style.height = "32px";
