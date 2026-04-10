@@ -32,6 +32,16 @@ function showToast(msg, type = "info", duration = 3000) {
 let currentLang = localStorage.getItem("lang") ||
   (navigator.language.startsWith("zh") ? "zh" : "en");
 
+// ── Random device name ──────────────────────────────────────────────────────
+const ADJECTIVES = ["Swift","Cosmic","Electric","Neon","Crystal","Silver","Golden","Velvet","Thunder","Frost"];
+const NOUNS      = ["Falcon","Phoenix","Dragon","Tiger","Eagle","Panther","Comet","Rocket","Spectre","Viper"];
+function randomName() {
+  const adj  = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+  const num  = Math.floor(Math.random() * 90) + 10;
+  return `${adj}${noun}${num}`;
+}
+const myDisplayName = randomName();
 
 const state = {
   roomId:      null,
@@ -48,8 +58,8 @@ const state = {
 
 const translations = {
   en: {
-    pageTitle:    "PairDrop Clone",
-    appName:       "PairDrop Clone",
+    pageTitle:    "FlaskDrop",
+    appName:       "FlaskDrop",
     leave:        "Leave",
     heroTitle:    "Send files between devices",
     heroSubtitle: "Create or join a room to start sharing",
@@ -98,8 +108,8 @@ const translations = {
     urlSendOk:   "URL sent",
   },
   zh: {
-    pageTitle:    "PairDrop Clone",
-    appName:      "PairDrop",
+    pageTitle:    "FlaskDrop",
+    appName:      "FlaskDrop",
     leave:        "离开",
     heroTitle:    "在设备之间发送文件",
     heroSubtitle: "创建或加入房间，开始共享",
@@ -172,6 +182,9 @@ function setLang(lang) {
   const btn = document.getElementById("langBtn");
   if (btn) btn.textContent = lang === "en" ? "中文" : "EN";
 
+  // Update page title with display name
+  document.title = `FlaskDrop: ${myDisplayName}`;
+
   // Re-render dynamic UI (peer cards have $$t-computed text)
   for (const [pid, entry] of state.peers) {
     const card = entry.card;
@@ -191,25 +204,10 @@ document.getElementById("langBtn").addEventListener("click", () => {
 });
 
 
-// ── Random device name ──────────────────────────────────────────────────────
-
-const ADJECTIVES = ["Swift","Cosmic","Electric","Neon","Crystal","Silver","Golden","Velvet","Thunder","Frost"];
-const NOUNS      = ["Falcon","Phoenix","Dragon","Tiger","Eagle","Panther","Comet","Rocket","Spectre","Viper"];
-
-function randomName() {
-  const adj  = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
-  const noun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
-  const num  = Math.floor(Math.random() * 90) + 10;
-  return `${adj}${noun}${num}`;
-}
-
-
 setLang(currentLang);  // apply saved language on load
 
-
-
-
-const $joinScreen    = document.getElementById("joinScreen");
+// Update page title with random display name
+document.title = `FlaskDrop: ${myDisplayName}`;
 const $roomScreen    = document.getElementById("roomScreen");
 const $joinError     = document.getElementById("joinError");
 const $createPanel   = document.getElementById("createPanel");
