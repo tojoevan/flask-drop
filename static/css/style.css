@@ -282,9 +282,9 @@ input[type="text"]::placeholder { color: var(--text-muted); }
   border-radius: var(--radius);
   padding: 20px;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
   cursor: pointer;
   transition: var(--transition);
   position: relative;
@@ -293,11 +293,27 @@ input[type="text"]::placeholder { color: var(--text-muted); }
 .peer-card:hover {
   background: var(--bg3);
   border-color: var(--accent);
-  transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 0 1px var(--accent-glow);
 }
 
-/* Mobile: full-width horizontal card */
+/* Card layout containers */
+.card-info {
+  flex-shrink: 0;
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.card-sections {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Mobile: full-width single-column grid */
 @media (max-width: 600px) {
   .peers-grid {
     display: flex;
@@ -305,30 +321,16 @@ input[type="text"]::placeholder { color: var(--text-muted); }
     gap: 12px;
   }
   .peer-card {
-    flex-direction: row !important;
-    align-items: flex-start;
-    gap: 12px;
     padding: 12px;
-  }
-  .card-info {
-    flex-shrink: 0;
-    width: 80px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-  }
-  .card-info .peer-icon svg { width: 28px; height: 28px; }
-  .card-info .peer-name { font-size: 0.8rem; text-align: center; }
-  .card-info .peer-status { font-size: 0.68rem; }
-  .card-sections {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
     gap: 10px;
   }
-  .peer-section { width: 100%; }
+  .card-info {
+    width: 72px;
+  }
+  .card-info .peer-icon svg { width: 28px; height: 28px; }
+  .card-info .peer-name { font-size: 0.78rem; text-align: center; }
+  .card-info .peer-status { font-size: 0.65rem; }
+  .card-sections { gap: 8px; }
   .peer-transfer-area { cursor: pointer; }
 }
 .peer-card.connected { border-color: var(--success); }
