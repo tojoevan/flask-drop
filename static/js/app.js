@@ -209,6 +209,7 @@ setLang(currentLang);  // apply saved language on load
 // Update page title with random display name
 document.title = `FlaskDrop: ${myDisplayName}`;
 const $roomScreen    = document.getElementById("roomScreen");
+const $joinScreen    = document.getElementById("joinScreen");
 const $joinError     = document.getElementById("joinError");
 const $createPanel   = document.getElementById("createPanel");
 const $joinPanel     = document.getElementById("joinPanel");
