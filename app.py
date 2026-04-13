@@ -270,7 +270,7 @@ def vault_create():
                 logger.warning("[VAULT] Empty filename")
                 return json_err("Empty filename", 400)
             
-            logger.info(f"[VAULT] Creating file item: {file.filename}, size={request.content_length}")
+            logger.info(f"[VAULT] Creating file item, size={request.content_length}")
             # Save file
             ext = Path(file.filename).suffix
             storage_name = f"{uuid.uuid4().hex}{ext}"
@@ -285,7 +285,7 @@ def vault_create():
                 mime_type=file.mimetype or "application/octet-stream"
             )
         
-        logger.info(f"[VAULT] Created item with code={item['code']}")
+        logger.info(f"[VAULT] Created item with code={item['code'][:2]}***")
         return json_ok({
             "code": item["code"],
             "expires_at": item["expires_at"],
@@ -298,10 +298,10 @@ def vault_create():
 @app.route("/api/vault/<code>", methods=["GET"])
 def vault_query(code: str):
     """Query vault item metadata (without content)."""
-    logger.info(f"[VAULT] Query request for code={code} from {request.remote_addr}")
+    logger.info(f"[VAULT] Query request for code={code[:2]}*** from {request.remote_addr}")
     item = db.get_vault_by_code(code)
     if not item:
-        logger.warning(f"[VAULT] Code not found or expired: {code}")
+        logger.warning(f"[VAULT] Code not found or expired: {code[:2]}***")
         return json_err("Code not found or expired", 404)
     
     logger.info(f"[VAULT] Found item type={item['type']}")
@@ -352,21 +352,21 @@ def vault_download(code: str):
 @app.route("/api/vault/<code>", methods=["DELETE"])
 def vault_claim(code: str):
     """Claim (destroy) vault item."""
-    logger.info(f"[VAULT] Claim request for code={code} from {request.remote_addr}")
+    logger.info(f"[VAULT] Claim request for code={code[:2]}*** from {request.remote_addr}")
     item = db.claim_vault_item(code)
     if not item:
-        logger.warning(f"[VAULT] Code not found or expired for claim: {code}")
+        logger.warning(f"[VAULT] Code not found or expired for claim: {code[:2]}***")
         return json_err("Code not found or expired", 404)
     
     # Delete file if exists
     if item.get("file_path"):
         try:
             Path(item["file_path"]).unlink(missing_ok=True)
-            logger.info(f"[VAULT] Deleted file: {item['file_path']}")
+            logger.info(f"[VAULT] Deleted file: {Path(item['file_path']).name}")
         except Exception as e:
             logger.error(f"[VAULT] Failed to delete file: {e}")
     
-    logger.info(f"[VAULT] Item claimed and destroyed: {code}")
+    logger.info(f"[VAULT] Item claimed and destroyed: {code[:2]}***")
     return json_ok({"message": "Content destroyed"})
 
 # Cleanup task
