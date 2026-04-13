@@ -240,10 +240,11 @@ def init_vault_table():
     conn.commit()
 
 def generate_vault_code() -> str:
-    """Generate 6-digit numeric code, check for collision."""
-    import random
+    """Generate 8-char alphanumeric code, check for collision."""
+    import random, string
+    chars = string.ascii_uppercase + string.digits  # A-Z, 0-9
     while True:
-        code = f"{random.randint(0, 999999):06d}"
+        code = ''.join(random.choices(chars, k=8))
         if not get_vault_by_code(code):
             return code
 
