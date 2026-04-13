@@ -593,6 +593,15 @@ input[type="text"]::placeholder { color: var(--text-muted); }
   border-bottom: 1px solid var(--border);
 }
 
+.vault-warning {
+  background: #fff3cd;
+  color: #856404;
+  padding: 8px 20px;
+  font-size: 0.85rem;
+  text-align: center;
+  border-bottom: 1px solid #ffeeba;
+}
+
 .vault-header h3 {
   margin: 0;
   font-size: 1.1rem;

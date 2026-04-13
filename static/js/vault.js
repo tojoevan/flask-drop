@@ -16,8 +16,11 @@ const Vault = {
       <div id="vaultOverlay" class="vault-overlay hidden">
         <div class="vault-panel">
           <div class="vault-header">
-            <h3 data-i18n="vaultTitle">🔒 保险箱</h3>
+            <h3 data-i18n="vaultTitle">🔒 暂存柜</h3>
             <button class="vault-close" title="关闭">×</button>
+          </div>
+          <div class="vault-warning">
+            <span data-i18n="vaultWarning">⚠️ 临时存储，重要数据请本地保存好</span>
           </div>
           
           <div class="vault-tabs">
@@ -51,7 +54,7 @@ const Vault = {
             </div>
             
             <button class="vault-submit" id="vaultDepositBtn">
-              <span class="vault-btn-text" data-i18n="vaultDepositBtn">存入保险箱</span>
+              <span class="vault-btn-text" data-i18n="vaultDepositBtn">存入暂存柜</span>
               <span class="vault-btn-progress hidden"></span>
             </button>
           </div>
@@ -72,7 +75,7 @@ const Vault = {
           <!-- 结果展示（存入成功） -->
           <div class="vault-content hidden" id="vaultSuccess">
             <div class="vault-success-icon">✅</div>
-            <div class="vault-success-title" data-i18n="vaultSuccessTitle">已存入保险箱</div>
+            <div class="vault-success-title" data-i18n="vaultSuccessTitle">已存入暂存柜</div>
             <div class="vault-code-display">
               <label data-i18n="vaultPickupCode">收件码</label>
               <div class="vault-code-box">
