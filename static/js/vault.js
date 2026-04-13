@@ -16,42 +16,42 @@ const Vault = {
       <div id="vaultOverlay" class="vault-overlay hidden">
         <div class="vault-panel">
           <div class="vault-header">
-            <h3>🔒 保险箱</h3>
+            <h3 data-i18n="vaultTitle">🔒 保险箱</h3>
             <button class="vault-close" title="关闭">×</button>
           </div>
           
           <div class="vault-tabs">
-            <button class="vault-tab active" data-tab="deposit">存入</button>
-            <button class="vault-tab" data-tab="pickup">取件</button>
+            <button class="vault-tab active" data-tab="deposit" data-i18n="vaultDeposit">存入</button>
+            <button class="vault-tab" data-tab="pickup" data-i18n="vaultPickup">取件</button>
           </div>
           
           <!-- 存入界面 -->
           <div class="vault-content" id="vaultDeposit">
             <div class="vault-type-selector">
-              <button class="vault-type-btn active" data-type="text">📝 文本</button>
-              <button class="vault-type-btn" data-type="file">📎 文件</button>
+              <button class="vault-type-btn active" data-type="text" data-i18n="vaultText">📝 文本</button>
+              <button class="vault-type-btn" data-type="file" data-i18n="vaultFile">📎 文件</button>
             </div>
             
             <div class="vault-input-area" id="vaultTextArea">
-              <textarea id="vaultTextInput" placeholder="在此输入要传递的文本内容..." maxlength="50000"></textarea>
-              <div class="vault-char-count">0 / 50000</div>
+              <textarea id="vaultTextInput" data-i18n-placeholder="vaultTextPlaceholder" placeholder="在此输入要传递的文本内容..." maxlength="50000"></textarea>
+              <div class="vault-char-count" data-i18n="vaultCharCount">0 / 50000</div>
             </div>
             
             <div class="vault-input-area hidden" id="vaultFileArea">
               <div class="vault-dropzone" id="vaultDropzone">
-                <div>📁 点击选择或拖拽文件到此处</div>
-                <div class="vault-hint">最大 100 MB</div>
+                <div data-i18n="vaultDropHint">点击选择或拖拽文件到此处</div>
+                <div class="vault-hint" data-i18n="vaultMaxSize">最大 100 MB</div>
               </div>
               <input type="file" id="vaultFileInput" hidden>
               <div class="vault-file-info hidden" id="vaultFileInfo"></div>
             </div>
             
-            <div class="vault-expiry">
+            <div class="vault-expiry" data-i18n="vaultExpiry">
               ⏱️ 有效期：30 分钟
             </div>
             
             <button class="vault-submit" id="vaultDepositBtn">
-              <span class="vault-btn-text">存入保险箱</span>
+              <span class="vault-btn-text" data-i18n="vaultDepositBtn">存入保险箱</span>
               <span class="vault-btn-progress hidden"></span>
             </button>
           </div>
@@ -59,9 +59,9 @@ const Vault = {
           <!-- 取件界面 -->
           <div class="vault-content hidden" id="vaultPickup">
             <div class="vault-code-input">
-              <label>输入 6 位收件码</label>
-              <input type="text" id="vaultCodeInput" maxlength="6" placeholder="000000" inputmode="numeric">
-              <button class="vault-query-btn" id="vaultQueryBtn">查看内容</button>
+              <label data-i18n="vaultEnterCode">输入 6 位收件码</label>
+              <input type="text" id="vaultCodeInput" maxlength="6" data-i18n-placeholder="vaultCodePlaceholder" placeholder="000000" inputmode="numeric">
+              <button class="vault-query-btn" id="vaultQueryBtn" data-i18n="vaultViewContent">查看内容</button>
             </div>
             
             <div class="vault-result hidden" id="vaultResult">
@@ -72,17 +72,17 @@ const Vault = {
           <!-- 结果展示（存入成功） -->
           <div class="vault-content hidden" id="vaultSuccess">
             <div class="vault-success-icon">✅</div>
-            <div class="vault-success-title">已存入保险箱</div>
+            <div class="vault-success-title" data-i18n="vaultSuccessTitle">已存入保险箱</div>
             <div class="vault-code-display">
-              <label>收件码</label>
+              <label data-i18n="vaultPickupCode">收件码</label>
               <div class="vault-code-box">
                 <span id="vaultCodeDisplay">------</span>
-                <button class="vault-copy-btn" id="vaultCopyBtn">复制</button>
+                <button class="vault-copy-btn" id="vaultCopyBtn" data-i18n="vaultCopy">复制</button>
               </div>
             </div>
             <div class="vault-expiry-display" id="vaultExpiryDisplay"></div>
-            <div class="vault-hint">⏱️ 有效期 30 分钟 · 取件后内容自动销毁</div>
-            <button class="vault-done-btn" id="vaultDoneBtn">完成</button>
+            <div class="vault-hint" data-i18n="vaultExpiryHint">⏱️ 有效期 30 分钟 · 取件后内容自动销毁</div>
+            <button class="vault-done-btn" id="vaultDoneBtn" data-i18n="vaultDone">完成</button>
           </div>
         </div>
       </div>
@@ -113,7 +113,9 @@ const Vault = {
     // 文本输入
     const $textInput = document.getElementById('vaultTextInput');
     $textInput.addEventListener('input', () => {
-      document.querySelector('.vault-char-count').textContent = `${$textInput.value.length} / 50000`;
+      const count = $textInput.value.length;
+      document.querySelector('.vault-char-count').textContent = 
+        `${count} / 50000`;
     });
     
     // 文件上传
@@ -170,10 +172,25 @@ const Vault = {
   show() {
     this.$overlay.classList.remove('hidden');
     document.getElementById('vaultTextInput').focus();
+    // 应用当前语言
+    this.applyTranslations();
   },
   
   hide() {
     this.$overlay.classList.add('hidden');
+  },
+  
+  applyTranslations() {
+    // 翻译所有 data-i18n 元素
+    this.$overlay.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (key) el.textContent = $$t(key);
+    });
+    // 翻译 placeholder
+    this.$overlay.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.dataset.i18nPlaceholder;
+      if (key) el.placeholder = $$t(key);
+    });
   },
   
   switchTab(tab) {
@@ -205,7 +222,7 @@ const Vault = {
   
   handleFile(file) {
     if (file.size > 100 * 1024 * 1024) {
-      showToast('文件超过 100 MB 限制', 'error');
+      showToast($$t('vaultErrorFileSize'), 'error');
       return;
     }
     
@@ -239,7 +256,7 @@ const Vault = {
     const $btnText = $btn.querySelector('.vault-btn-text');
     
     $btn.disabled = true;
-    $btnText.textContent = '上传中...';
+    $btnText.textContent = $$t('vaultUploading');
     
     try {
       const formData = new FormData();
@@ -248,13 +265,13 @@ const Vault = {
       if (type === 'text') {
         const content = document.getElementById('vaultTextInput').value.trim();
         if (!content) {
-          showToast('请输入文本内容', 'error');
+          showToast($$t('vaultErrorNoText'), 'error');
           return;
         }
         formData.append('content', content);
       } else {
         if (!this.selectedFile) {
-          showToast('请选择文件', 'error');
+          showToast($$t('vaultErrorNoFile'), 'error');
           return;
         }
         formData.append('file', this.selectedFile);
@@ -272,27 +289,27 @@ const Vault = {
       document.getElementById('vaultCodeDisplay').textContent = data.data.code;
       const expiry = new Date(data.data.expires_at * 1000);
       document.getElementById('vaultExpiryDisplay').textContent = 
-        `有效期至：${expiry.toLocaleString()}`;
+        `${$$t('vaultExpiresAt')}: ${expiry.toLocaleString()}`;
       
       this.showPanel('success');
       
     } catch (e) {
-      showToast('存入失败：' + e.message, 'error');
+      showToast($$t('vaultErrorDeposit') + ': ' + e.message, 'error');
     } finally {
       $btn.disabled = false;
-      $btnText.textContent = '存入保险箱';
+      $btnText.textContent = $$t('vaultDepositBtn');
     }
   },
   
   async queryContent() {
     const code = document.getElementById('vaultCodeInput').value.trim();
     if (code.length !== 6) {
-      showToast('请输入 6 位收件码', 'error');
+      showToast($$t('vaultErrorCodeLen'), 'error');
       return;
     }
     
     const $result = document.getElementById('vaultResult');
-    $result.innerHTML = '<div class="vault-loading">查询中...</div>';
+    $result.innerHTML = `<div class="vault-loading">${$$t('vaultQuerying')}</div>`;
     $result.classList.remove('hidden');
     
     try {
@@ -301,7 +318,7 @@ const Vault = {
       const meta = await metaRes.json();
       
       if (!meta.ok) {
-        $result.innerHTML = '<div class="vault-error">收件码不存在或已过期</div>';
+        $result.innerHTML = `<div class="vault-error">${$$t('vaultCodeNotFound')}</div>`;
         return;
       }
       
@@ -315,7 +332,7 @@ const Vault = {
         contentHtml = `
           <div class="vault-text-content">
             <pre>${escHtml(textData.data.content)}</pre>
-            <button class="vault-copy-content" onclick="copyToClipboard(this.previousElementSibling.innerText)">复制文本</button>
+            <button class="vault-copy-content" onclick="copyToClipboard(this.previousElementSibling.innerText)">${$$t('vaultCopyText')}</button>
           </div>
         `;
       } else {
@@ -324,7 +341,7 @@ const Vault = {
             <div class="vault-file-icon">📎</div>
             <div class="vault-file-name">${escHtml(meta.data.file_name)}</div>
             <div class="vault-file-size">${formatBytes(meta.data.file_size)}</div>
-            <a href="/api/vault/${code}/download" class="vault-download-btn" download>⬇ 下载文件</a>
+            <a href="/api/vault/${code}/download" class="vault-download-btn" download>${$$t('vaultDownload')}</a>
           </div>
         `;
       }
@@ -332,22 +349,22 @@ const Vault = {
       const expiry = new Date(meta.data.expires_at * 1000);
       $result.innerHTML = `
         <div class="vault-item-meta">
-          <span>存入时间：${new Date(meta.data.created_at * 1000).toLocaleString()}</span>
-          <span>有效期至：${expiry.toLocaleString()}</span>
+          <span>${$$t('vaultStoredAt')}: ${new Date(meta.data.created_at * 1000).toLocaleString()}</span>
+          <span>${$$t('vaultExpiresAt')}: ${expiry.toLocaleString()}</span>
         </div>
         ${contentHtml}
         <button class="vault-claim-btn" onclick="Vault.claimItem('${code}')">
-          ✅ 确认收取，销毁内容
+          ${$$t('vaultConfirmClaim')}
         </button>
       `;
       
     } catch (e) {
-      $result.innerHTML = `<div class="vault-error">查询失败：${e.message}</div>`;
+      $result.innerHTML = `<div class="vault-error">${$$t('vaultErrorQuery')}: ${e.message}</div>`;
     }
   },
   
   async claimItem(code) {
-    if (!confirm('内容将立即销毁，无法恢复。确认收取？')) return;
+    if (!confirm($$t('vaultClaimConfirmMsg'))) return;
     
     try {
       const res = await fetch(`/api/vault/${code}`, { method: 'DELETE' });
@@ -358,7 +375,7 @@ const Vault = {
       document.getElementById('vaultResult').innerHTML = `
         <div class="vault-claimed">
           <div class="vault-claimed-icon">🔒</div>
-          <div>已收取并销毁</div>
+          <div>${$$t('vaultClaimed')}</div>
         </div>
       `;
       
@@ -368,7 +385,7 @@ const Vault = {
       }, 2000);
       
     } catch (e) {
-      showToast('收取失败：' + e.message, 'error');
+      showToast($$t('vaultErrorClaim') + ': ' + e.message, 'error');
     }
   }
 };
