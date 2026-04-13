@@ -3,12 +3,44 @@ import random
 import string
 import threading
 import time
+import logging
+import sys
 from pathlib import Path
+from logging.handlers import RotatingFileHandler
 
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
 import db
+
+# ── logging setup ─────────────────────────────────────────────────────────────
+LOG_DIR = Path(__file__).parent / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+LOG_FILE = LOG_DIR / "app.log"
+
+formatter = logging.Formatter(
+    '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
+)
+
+# File handler (rotating, max 10MB, keep 5 backups)
+file_handler = RotatingFileHandler(LOG_FILE, maxBytes=10*1024*1024, backupCount=5)
+file_handler.setFormatter(formatter)
+file_handler.setLevel(logging.INFO)
+
+# Console handler
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(formatter)
+console_handler.setLevel(logging.INFO)
+
+# Root logger
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=[file_handler, console_handler]
+)
+
+logger = logging.getLogger(__name__)
+logger.info("="*50)
+logger.info("FlaskDrop Server Starting...")
 
 # ── constants ──────────────────────────────────────────────────────────────────
 
@@ -214,50 +246,65 @@ VAULT_STORAGE.mkdir(exist_ok=True)
 @app.route("/api/vault", methods=["POST"])
 def vault_create():
     """Create a new vault item (text or file)."""
+    logger.info(f"[VAULT] Create request from {request.remote_addr}, type={request.form.get('type')}")
     item_type = request.form.get("type")
     if item_type not in ("text", "file"):
+        logger.warning(f"[VAULT] Invalid type: {item_type}")
         return json_err("Invalid type", 400)
     
-    if item_type == "text":
-        content = request.form.get("content", "")
-        if not content:
-            return json_err("Content required", 400)
-        item = db.create_vault_item("text", content=content)
-    else:
-        # File upload
-        if "file" not in request.files:
-            return json_err("File required", 400)
-        file = request.files["file"]
-        if file.filename == "":
-            return json_err("Empty filename", 400)
+    try:
+        if item_type == "text":
+            content = request.form.get("content", "")
+            if not content:
+                logger.warning("[VAULT] Empty content")
+                return json_err("Content required", 400)
+            logger.info(f"[VAULT] Creating text item, content length={len(content)}")
+            item = db.create_vault_item("text", content=content)
+        else:
+            # File upload
+            if "file" not in request.files:
+                logger.warning("[VAULT] No file in request")
+                return json_err("File required", 400)
+            file = request.files["file"]
+            if file.filename == "":
+                logger.warning("[VAULT] Empty filename")
+                return json_err("Empty filename", 400)
+            
+            logger.info(f"[VAULT] Creating file item: {file.filename}, size={request.content_length}")
+            # Save file
+            ext = Path(file.filename).suffix
+            storage_name = f"{uuid.uuid4().hex}{ext}"
+            file_path = VAULT_STORAGE / storage_name
+            file.save(file_path)
+            
+            item = db.create_vault_item(
+                "file",
+                file_path=str(file_path),
+                file_name=file.filename,
+                file_size=os.path.getsize(file_path),
+                mime_type=file.mimetype or "application/octet-stream"
+            )
         
-        # Save file
-        ext = Path(file.filename).suffix
-        storage_name = f"{uuid.uuid4().hex}{ext}"
-        file_path = VAULT_STORAGE / storage_name
-        file.save(file_path)
-        
-        item = db.create_vault_item(
-            "file",
-            file_path=str(file_path),
-            file_name=file.filename,
-            file_size=os.path.getsize(file_path),
-            mime_type=file.mimetype or "application/octet-stream"
-        )
-    
-    return json_ok({
-        "code": item["code"],
-        "expires_at": item["expires_at"],
-        "type": item_type
-    })
+        logger.info(f"[VAULT] Created item with code={item['code']}")
+        return json_ok({
+            "code": item["code"],
+            "expires_at": item["expires_at"],
+            "type": item_type
+        })
+    except Exception as e:
+        logger.exception(f"[VAULT] Create failed: {e}")
+        return json_err("Internal error", 500)
 
 @app.route("/api/vault/<code>", methods=["GET"])
 def vault_query(code: str):
     """Query vault item metadata (without content)."""
+    logger.info(f"[VAULT] Query request for code={code} from {request.remote_addr}")
     item = db.get_vault_by_code(code)
     if not item:
+        logger.warning(f"[VAULT] Code not found or expired: {code}")
         return json_err("Code not found or expired", 404)
     
+    logger.info(f"[VAULT] Found item type={item['type']}")
     return json_ok({
         "code": item["code"],
         "type": item["type"],
@@ -305,17 +352,21 @@ def vault_download(code: str):
 @app.route("/api/vault/<code>", methods=["DELETE"])
 def vault_claim(code: str):
     """Claim (destroy) vault item."""
+    logger.info(f"[VAULT] Claim request for code={code} from {request.remote_addr}")
     item = db.claim_vault_item(code)
     if not item:
+        logger.warning(f"[VAULT] Code not found or expired for claim: {code}")
         return json_err("Code not found or expired", 404)
     
     # Delete file if exists
     if item.get("file_path"):
         try:
             Path(item["file_path"]).unlink(missing_ok=True)
-        except:
-            pass
+            logger.info(f"[VAULT] Deleted file: {item['file_path']}")
+        except Exception as e:
+            logger.error(f"[VAULT] Failed to delete file: {e}")
     
+    logger.info(f"[VAULT] Item claimed and destroyed: {code}")
     return json_ok({"message": "Content destroyed"})
 
 # Cleanup task
@@ -337,5 +388,13 @@ PORT = int(__import__("os").getenv("PORT", 8082))
 
 if __name__ == "__main__":
     db.init_db()
-    print(f"Starting PairDrop Clone at http://localhost:{PORT}")
+    
+    # Log all registered routes
+    logger.info("Registered routes:")
+    for rule in app.url_map.iter_rules():
+        if 'static' not in str(rule):
+            logger.info(f"  {rule.methods} {rule.rule}")
+    
+    logger.info(f"Starting FlaskDrop Server at http://0.0.0.0:{PORT}")
+    print(f"Starting FlaskDrop Server at http://localhost:{PORT}")
     app.run(host="0.0.0.0", port=PORT, debug=False, threaded=True, use_reloader=False)
