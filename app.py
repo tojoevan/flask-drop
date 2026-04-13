@@ -382,6 +382,28 @@ def vault_cleanup_task():
 # Start cleanup thread
 threading.Thread(target=vault_cleanup_task, daemon=True).start()
 
+# Log cleanup task - remove logs older than 7 days
+def log_cleanup_task():
+    """Remove log files older than 7 days every hour."""
+    import os
+    while True:
+        time.sleep(3600)  # 1 hour
+        try:
+            now = time.time()
+            max_age = 7 * 24 * 3600  # 7 days
+            removed = 0
+            for log_file in LOG_DIR.glob("*.log*"):
+                if log_file.is_file() and now - log_file.stat().st_mtime > max_age:
+                    log_file.unlink()
+                    removed += 1
+            if removed:
+                logger.info(f"[Log Cleanup] Removed {removed} old log files")
+        except Exception as e:
+            print(f"[Log Cleanup Error] {e}")
+
+# Start log cleanup thread
+threading.Thread(target=log_cleanup_task, daemon=True).start()
+
 # ── entry point ───────────────────────────────────────────────────────────────
 
 PORT = int(__import__("os").getenv("PORT", 8082))
