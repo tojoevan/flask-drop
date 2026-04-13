@@ -81,7 +81,7 @@ const Vault = {
               </div>
             </div>
             <div class="vault-expiry-display" id="vaultExpiryDisplay"></div>
-            <div class="vault-hint">取件后内容自动销毁</div>
+            <div class="vault-hint">⏱️ 有效期 30 分钟 · 取件后内容自动销毁</div>
             <button class="vault-done-btn" id="vaultDoneBtn">完成</button>
           </div>
         </div>
