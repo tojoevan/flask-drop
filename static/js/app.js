@@ -109,7 +109,7 @@ const translations = {
     // Vault
     vaultBtn: "🔒 Locker",
     vaultTitle: "🔒 Locker",
-    vaultWarning: "⚠️ Temporary storage — save important data locally",
+    vaultWarning: "⚠️ Temporary storage — do not store important data or backup on your own",
     vaultDeposit: "Deposit",
     vaultPickup: "Pickup",
     vaultText: "📝 Text",
@@ -198,7 +198,7 @@ const translations = {
     // Vault
     vaultBtn: "🔒 暂存柜",
     vaultTitle: "🔒 暂存柜",
-    vaultWarning: "⚠️ 临时存储，重要数据请本地保存好",
+    vaultWarning: "⚠️ 临时存储，勿传重要数据或自行备份",
     vaultDeposit: "存入",
     vaultPickup: "取件",
     vaultText: "📝 文本",
