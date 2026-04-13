@@ -59,8 +59,8 @@ const Vault = {
           <!-- 取件界面 -->
           <div class="vault-content hidden" id="vaultPickup">
             <div class="vault-code-input">
-              <label data-i18n="vaultEnterCode">输入 8 位收件码</label>
-              <input type="text" id="vaultCodeInput" maxlength="8" data-i18n-placeholder="vaultCodePlaceholder" placeholder="A1B2C3D4">
+              <label data-i18n="vaultEnterCode">输入 6 位收件码</label>
+              <input type="text" id="vaultCodeInput" maxlength="6" data-i18n-placeholder="vaultCodePlaceholder" placeholder="3X9KPL">
               <button class="vault-query-btn" id="vaultQueryBtn" data-i18n="vaultViewContent">查看内容</button>
             </div>
             
@@ -142,13 +142,14 @@ const Vault = {
     // 存入按钮
     document.getElementById('vaultDepositBtn').addEventListener('click', () => this.deposit());
     
-    // 收件码输入（自动大写，允许字母数字）
+    // 收件码输入（自动大写，允许字母数字，去掉易混淆字符）
     const $codeInput = document.getElementById('vaultCodeInput');
     $codeInput.addEventListener('input', () => {
-      $codeInput.value = $codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+      // 允许：23456789ABCDEFGHJKMNPQRSTUVWXYZ（去掉 0,O,1,I,L）
+      $codeInput.value = $codeInput.value.toUpperCase().replace(/[^23456789ABCDEFGHJKMNPQRSTUVWXYZ]/g, '').slice(0, 6);
     });
     $codeInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && $codeInput.value.length === 8) {
+      if (e.key === 'Enter' && $codeInput.value.length === 6) {
         this.queryContent();
       }
     });
@@ -303,7 +304,7 @@ const Vault = {
   
   async queryContent() {
     const code = document.getElementById('vaultCodeInput').value.trim();
-    if (code.length !== 8) {
+    if (code.length !== 6) {
       showToast($$t('vaultErrorCodeLen'), 'error');
       return;
     }
