@@ -664,7 +664,7 @@ input[type="text"]::placeholder { color: var(--text-muted); }
 .vault-type-btn.active {
   background: var(--accent);
   border-color: var(--accent);
-  color: #000;
+  color: #fff;
 }
 
 /* Text input */
@@ -757,7 +757,7 @@ input[type="text"]::placeholder { color: var(--text-muted); }
   background: var(--accent);
   border: none;
   border-radius: 8px;
-  color: #000;
+  color: #fff;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -810,7 +810,7 @@ input[type="text"]::placeholder { color: var(--text-muted); }
   background: var(--accent);
   border: none;
   border-radius: 8px;
-  color: #000;
+  color: #fff;
   font-size: 1rem;
   cursor: pointer;
 }
@@ -894,7 +894,7 @@ input[type="text"]::placeholder { color: var(--text-muted); }
   display: inline-block;
   padding: 12px 24px;
   background: var(--success);
-  color: #000;
+  color: #fff;
   text-decoration: none;
   border-radius: 8px;
   font-weight: 600;
@@ -984,7 +984,7 @@ input[type="text"]::placeholder { color: var(--text-muted); }
   background: var(--accent);
   border: none;
   border-radius: 8px;
-  color: #000;
+  color: #fff;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
