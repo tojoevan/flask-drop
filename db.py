@@ -214,3 +214,115 @@ def _parse_peer(d: dict | None) -> dict | None:
         except Exception:
             d[col] = []
     return d
+
+# ── Vault (保险箱) ───────────────────────────────────────────────────────────
+
+def init_vault_table():
+    """Create vault_items table if not exists."""
+    conn = _conn()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS vault_items (
+            id          TEXT PRIMARY KEY,
+            code        TEXT UNIQUE NOT NULL,
+            type        TEXT NOT NULL CHECK(type IN ('text', 'file')),
+            content     TEXT,                    -- text content
+            file_path   TEXT,                    -- file storage path
+            file_name   TEXT,                    -- original filename
+            file_size   INTEGER,
+            mime_type   TEXT,
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            expires_at  TIMESTAMP NOT NULL,
+            status      TEXT DEFAULT 'active' CHECK(status IN ('active', 'claimed', 'expired'))
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_vault_code ON vault_items(code)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_vault_expires ON vault_items(expires_at)")
+    conn.commit()
+
+def generate_vault_code() -> str:
+    """Generate 6-digit numeric code, check for collision."""
+    import random
+    while True:
+        code = f"{random.randint(0, 999999):06d}"
+        if not get_vault_by_code(code):
+            return code
+
+def create_vault_item(item_type: str, content: str = None, file_path: str = None,
+                      file_name: str = None, file_size: int = None, mime_type: str = None) -> dict:
+    """Create a new vault item, return {id, code, expires_at}."""
+    import uuid, time
+    init_vault_table()
+    item_id = str(uuid.uuid4())
+    code = generate_vault_code()
+    expires_at = time.time() + 1800  # 30 minutes
+    
+    conn = _conn()
+    conn.execute("""
+        INSERT INTO vault_items (id, code, type, content, file_path, file_name, file_size, mime_type, expires_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (item_id, code, item_type, content, file_path, file_name, file_size, mime_type, expires_at))
+    conn.commit()
+    
+    return {"id": item_id, "code": code, "expires_at": expires_at}
+
+def get_vault_by_code(code: str) -> dict | None:
+    """Get vault item by code, check expiration."""
+    init_vault_table()
+    conn = _conn()
+    c = conn.cursor()
+    c.execute("SELECT * FROM vault_items WHERE code = ? AND status = 'active'", (code,))
+    row = c.fetchone()
+    if not row:
+        return None
+    
+    item = dict(row)
+    import time
+    if time.time() > item["expires_at"]:
+        # Auto-expire
+        conn.execute("UPDATE vault_items SET status = 'expired' WHERE id = ?", (item["id"],))
+        conn.commit()
+        return None
+    return item
+
+def claim_vault_item(code: str) -> dict | None:
+    """Mark item as claimed (destroyed), return item data."""
+    init_vault_table()
+    conn = _conn()
+    c = conn.cursor()
+    c.execute("SELECT * FROM vault_items WHERE code = ? AND status = 'active'", (code,))
+    row = c.fetchone()
+    if not row:
+        return None
+    
+    item = dict(row)
+    import time
+    if time.time() > item["expires_at"]:
+        conn.execute("UPDATE vault_items SET status = 'expired' WHERE id = ?", (item["id"],))
+        conn.commit()
+        return None
+    
+    # Mark as claimed
+    conn.execute("UPDATE vault_items SET status = 'claimed' WHERE id = ?", (item["id"],))
+    conn.commit()
+    return item
+
+def cleanup_expired_vault():
+    """Delete expired/claimed vault items and their files."""
+    init_vault_table()
+    import time, os
+    conn = _conn()
+    c = conn.cursor()
+    c.execute("SELECT id, file_path FROM vault_items WHERE expires_at < ? OR status != 'active'", (time.time(),))
+    rows = c.fetchall()
+    
+    for row in rows:
+        # Delete file if exists
+        if row["file_path"] and os.path.exists(row["file_path"]):
+            try:
+                os.remove(row["file_path"])
+            except:
+                pass
+        # Delete DB record
+        conn.execute("DELETE FROM vault_items WHERE id = ?", (row["id"],))
+    
+    conn.commit()

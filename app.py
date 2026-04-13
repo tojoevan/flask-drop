@@ -207,3 +207,131 @@ if __name__ == "__main__":
     db.init_db()
     print(f"Starting PairDrop Clone at http://localhost:{PORT}")
     app.run(host="0.0.0.0", port=PORT, debug=False, threaded=True, use_reloader=False)
+
+# ── Vault (保险箱) API ───────────────────────────────────────────────────────
+
+import os, time, uuid
+from pathlib import Path
+
+VAULT_STORAGE = Path(__file__).parent / "vault_storage"
+VAULT_STORAGE.mkdir(exist_ok=True)
+
+@app.route("/api/vault", methods=["POST"])
+def vault_create():
+    """Create a new vault item (text or file)."""
+    item_type = request.form.get("type")
+    if item_type not in ("text", "file"):
+        return json_err("Invalid type", 400)
+    
+    if item_type == "text":
+        content = request.form.get("content", "")
+        if not content:
+            return json_err("Content required", 400)
+        item = db.create_vault_item("text", content=content)
+    else:
+        # File upload
+        if "file" not in request.files:
+            return json_err("File required", 400)
+        file = request.files["file"]
+        if file.filename == "":
+            return json_err("Empty filename", 400)
+        
+        # Save file
+        ext = Path(file.filename).suffix
+        storage_name = f"{uuid.uuid4().hex}{ext}"
+        file_path = VAULT_STORAGE / storage_name
+        file.save(file_path)
+        
+        item = db.create_vault_item(
+            "file",
+            file_path=str(file_path),
+            file_name=file.filename,
+            file_size=os.path.getsize(file_path),
+            mime_type=file.mimetype or "application/octet-stream"
+        )
+    
+    return json_ok({
+        "code": item["code"],
+        "expires_at": item["expires_at"],
+        "type": item_type
+    })
+
+@app.route("/api/vault/<code>", methods=["GET"])
+def vault_query(code: str):
+    """Query vault item metadata (without content)."""
+    item = db.get_vault_by_code(code)
+    if not item:
+        return json_err("Code not found or expired", 404)
+    
+    return json_ok({
+        "code": item["code"],
+        "type": item["type"],
+        "file_name": item.get("file_name"),
+        "file_size": item.get("file_size"),
+        "mime_type": item.get("mime_type"),
+        "created_at": item["created_at"],
+        "expires_at": item["expires_at"]
+    })
+
+@app.route("/api/vault/<code>/content", methods=["GET"])
+def vault_get_content(code: str):
+    """Get text content."""
+    item = db.get_vault_by_code(code)
+    if not item:
+        return json_err("Code not found or expired", 404)
+    if item["type"] != "text":
+        return json_err("Not a text item", 400)
+    
+    return json_ok({
+        "content": item["content"],
+        "expires_at": item["expires_at"]
+    })
+
+@app.route("/api/vault/<code>/download", methods=["GET"])
+def vault_download(code: str):
+    """Download file."""
+    item = db.get_vault_by_code(code)
+    if not item:
+        return json_err("Code not found or expired", 404)
+    if item["type"] != "file":
+        return json_err("Not a file item", 400)
+    
+    file_path = Path(item["file_path"])
+    if not file_path.exists():
+        return json_err("File not found", 404)
+    
+    return send_from_directory(
+        file_path.parent,
+        file_path.name,
+        as_attachment=True,
+        download_name=item["file_name"]
+    )
+
+@app.route("/api/vault/<code>", methods=["DELETE"])
+def vault_claim(code: str):
+    """Claim (destroy) vault item."""
+    item = db.claim_vault_item(code)
+    if not item:
+        return json_err("Code not found or expired", 404)
+    
+    # Delete file if exists
+    if item.get("file_path"):
+        try:
+            Path(item["file_path"]).unlink(missing_ok=True)
+        except:
+            pass
+    
+    return json_ok({"message": "Content destroyed"})
+
+# Cleanup task
+def vault_cleanup_task():
+    """Run cleanup every 5 minutes."""
+    while True:
+        time.sleep(300)
+        try:
+            db.cleanup_expired_vault()
+        except Exception as e:
+            print(f"[Vault Cleanup Error] {e}")
+
+# Start cleanup thread
+threading.Thread(target=vault_cleanup_task, daemon=True).start()
