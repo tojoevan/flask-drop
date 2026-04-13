@@ -107,6 +107,7 @@ const translations = {
     received:    "Received:",
     urlSendOk:   "URL sent",
     // Vault
+    vaultBtn: "🔒 Vault",
     vaultTitle: "🔒 Vault",
     vaultDeposit: "Deposit",
     vaultPickup: "Pickup",
@@ -194,6 +195,7 @@ const translations = {
     received:    "已接收：",
     urlSendOk:   "链接已发送",
     // Vault
+    vaultBtn: "🔒 保险箱",
     vaultTitle: "🔒 保险箱",
     vaultDeposit: "存入",
     vaultPickup: "取件",
