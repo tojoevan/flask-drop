@@ -203,11 +203,6 @@ _thread.start()
 
 PORT = int(__import__("os").getenv("PORT", 8082))
 
-if __name__ == "__main__":
-    db.init_db()
-    print(f"Starting PairDrop Clone at http://localhost:{PORT}")
-    app.run(host="0.0.0.0", port=PORT, debug=False, threaded=True, use_reloader=False)
-
 # ── Vault (保险箱) API ───────────────────────────────────────────────────────
 
 import os, time, uuid
@@ -335,3 +330,12 @@ def vault_cleanup_task():
 
 # Start cleanup thread
 threading.Thread(target=vault_cleanup_task, daemon=True).start()
+
+# ── entry point ───────────────────────────────────────────────────────────────
+
+PORT = int(__import__("os").getenv("PORT", 8082))
+
+if __name__ == "__main__":
+    db.init_db()
+    print(f"Starting PairDrop Clone at http://localhost:{PORT}")
+    app.run(host="0.0.0.0", port=PORT, debug=False, threaded=True, use_reloader=False)
